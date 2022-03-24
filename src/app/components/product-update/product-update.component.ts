@@ -19,9 +19,7 @@ export class ProductUpdateComponent implements OnInit {
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id'); 
-    //verificar pq não está passando valor para o id
-    this.productService.readById('id').subscribe(product => {
-    //id passado dentro do readById não deve estar entre ''
+    this.productService.readById(id).subscribe(product => {
       this.product = product;
     });
   }
