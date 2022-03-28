@@ -2,7 +2,7 @@ import { Product } from './product.model';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Observable } from 'rxjs';
+import { catchError, EMPTY, map, Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -14,39 +14,61 @@ export class ProductService {
   constructor(private snackBar: MatSnackBar,
     private http: HttpClient) { }
 
-  showMesage(msg: string): void {
+  showMesage(msg: string, isError: boolean = false): void {
     this.snackBar.open(msg, 'x', {
       duration: 3000,
       horizontalPosition: "right",
-      verticalPosition: "top"
+      verticalPosition: "top",
+      panelClass: isError ? ['msg-error'] : ['msg-sucess']
     })
   }
 
   //metodo para criar produtos no banco
   create(product: Product): Observable<Product> {
-    return this.http.post<Product>(this.baseUrl, product)
+    return this.http.post<Product>(this.baseUrl, product).pipe(
+      map((obj) => obj),
+      catchError(e => this.errorHandler(e))
+    );
   }
 
   //metodo para ler produtos no banco
   read(): Observable<Product[]> {
-    return this.http.get<Product[]>(this.baseUrl)
+    return this.http.get<Product[]>(this.baseUrl).pipe(
+      map((obj) => obj),
+      catchError(e => this.errorHandler(e))
+    );
   }
 
   readById(id: string | null): Observable<Product> {
     const url = `${this.baseUrl}/${id}`
-    return this.http.get<Product>(url)
+    return this.http.get<Product>(url).pipe(
+      map((obj) => obj),
+      catchError(e => this.errorHandler(e))
+    );
   }
 
+  //metodo para atualizar produtos no banco
   update(product: Product): Observable<Product> {
     const url = `${this.baseUrl}/${product.id}`
-    return this.http.put<Product>(url, product)
+    return this.http.put<Product>(url, product).pipe(
+      map((obj) => obj),
+      catchError(e => this.errorHandler(e))
+    );
   }
 
-
-  //feito antes de ver a aula, verificar se esta correto
-  deleteById(id: string): Observable<Product> {
+  //metodo para excluir produtos no banco
+  delete(id: number): Observable<Product> {
     const url = `${this.baseUrl}/${id}`
-    return this.http.delete<Product>(url)
+    return this.http.delete<Product>(url).pipe(
+      map((obj) => obj),
+      catchError(e => this.errorHandler(e))
+    );
   }
 
+  //meotodo para trativa de erros
+  errorHandler(e: any): Observable<any> {
+    console.log(e);
+    this.showMesage('Ocorreu um erro', true);
+    return EMPTY;
+  }
 }
